@@ -1241,12 +1241,10 @@
 		<h2><i class="fas fa-graduation-cap"></i> Portfolio</h2>
 		</div>
   <div class="container portfolio-filters" role="tablist" aria-label="Portfolio filters">
-    <button class="filter-btn active" data-filter="all" type="button">All</button>
-    <button class="filter-btn" data-filter="campaigns" type="button">Campaigns</button>
-    <button class="filter-btn" data-filter="content" type="button">Content</button>
-    <button class="filter-btn" data-filter="seo" type="button">SEO</button>
-    <button class="filter-btn" data-filter="design" type="button">Design</button>
-    <button class="filter-btn" data-filter="scripts" type="button">Scripts</button>
+
+    <button class="filter-btn" data-filter="articles" type="button"><a href="https://blog.asnany.net/%d9%85%d9%83%d9%88%d9%86%d8%a7%d8%aa-%d9%83%d8%b1%d8%b3%d9%8a-%d8%a7%d9%84%d8%a3%d8%b3%d9%86%d8%a7%d9%86/">articles</a></button>
+    <button class="filter-btn" data-filter="content samples" type="button">content samples</button>
+    <button class="filter-btn" data-filter="camping" type="button"><a href="https://drive.google.com/drive/folders/1nL-g2OJr--E3MtbCConzvbfyzou3Vz8z">camping</a></button>
 </div>
   <div class="container " id="portfolio-grid">
 	
@@ -1312,74 +1310,98 @@
 		});
 	</script>
 <script>
-  const portfolioGrid = document.getElementById("portfolio-grid");
-  const categories = ['campaigns', 'content', 'seo', 'design', 'scripts'];
-
-  for (let i = 1; i <= 63; i++) {
-    const item = document.createElement("div");
-    item.classList.add("pf-item");
-
-    // Assign category deterministically (adjust as needed)
-    const cat = categories[(i - 1) % categories.length];
-    item.dataset.category = cat;
-
-    const img = document.createElement("img");
-    img.src = `assets/images/portfolio/${i}.jpg`;
-    img.alt = `Portfolio Image ${i}`;
-
-    // Optional overlay with category chip
-    const overlay = document.createElement("div");
-    overlay.className = "pf-overlay";
-    overlay.innerHTML = `<span class="pf-chip">${cat.toUpperCase()}</span>`;
-
-    item.appendChild(img);
-    item.appendChild(overlay);
-    portfolioGrid.appendChild(item);
-  }
-
-  // Filter handling
-  document.querySelectorAll('.portfolio-filters .filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const filter = btn.dataset.filter;
-
-      document.querySelectorAll('.portfolio-filters .filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      document.querySelectorAll('#portfolio-grid .pf-item').forEach(item => {
-        if (filter === 'all' || (item.dataset.category || '').split(' ').includes(filter)) {
-          item.classList.remove('hidden');
-        } else {
-          item.classList.add('hidden');
-        }
-      });
-    });
-  });
-
-  // Hover preview popup centered on screen
-  (function() {
-    const preview = document.createElement('div');
-    preview.className = 'pf-preview';
-    const previewImg = document.createElement('img');
-    preview.appendChild(previewImg);
-    document.body.appendChild(preview);
-
-    function attachPreviewHandlers() {
-      document.querySelectorAll('#portfolio-grid .pf-item').forEach(item => {
-        item.addEventListener('mouseenter', () => {
-          const img = item.querySelector('img');
-          if (!img) return;
-          previewImg.src = img.src;
-          preview.style.display = 'block';
-        });
-        item.addEventListener('mouseleave', () => {
-          preview.style.display = 'none';
-        });
-      });
-    }
-
-    attachPreviewHandlers();
-  })();
-</script>
+	(function(){
+	  const portfolioGrid = document.getElementById("portfolio-grid");
+	  if (!portfolioGrid) {
+		console.error('portfolio-grid not found');
+		return;
+	  }
+	
+	  const categories = ['camping', 'content sample', 'articles'];
+	
+	  // توليد العناصر
+	  for (let i = 1; i <= 63; i++) {
+		const item = document.createElement("div");
+		item.classList.add("portfolio-item"); // متوافق مع CSS في الصفحة
+	
+		const cat = categories[(i - 1) % categories.length];
+		item.dataset.category = cat;
+	
+		const img = document.createElement("img");
+		img.src = `assets/images/portfolio/${i}.jpg`;
+		img.alt = `Portfolio Image ${i}`;
+	
+		const overlay = document.createElement("div");
+		overlay.className = "pf-overlay";
+		overlay.innerHTML = `<span class="pf-chip">${cat.toUpperCase()}</span>`;
+	
+		item.appendChild(img);
+		item.appendChild(overlay);
+		portfolioGrid.appendChild(item);
+	  }
+	
+	  // نبدأ بإخفاء الكل - لأنك عايز الصور تظهر بس لما يتضغط على Content Sample
+	  document.querySelectorAll('#portfolio-grid .portfolio-item').forEach(it => it.classList.add('hidden'));
+	
+	  // مساعدة لتوحيد النص (trim + lowercase)
+	  function norm(s){ return (s||'').toString().trim().toLowerCase(); }
+	
+	  // أضف مستمع للزرار
+	  document.querySelectorAll('.portfolio-filters .filter-btn').forEach(btn => {
+		btn.addEventListener('click', () => {
+		  const filterRaw = btn.dataset.filter;
+		  const filter = norm(filterRaw);
+	
+		  // تحديث حالة الأزرار (active)
+		  document.querySelectorAll('.portfolio-filters .filter-btn')
+			.forEach(b => b.classList.remove('active'));
+		  btn.classList.add('active');
+	
+		  // سلوكك: لو الزر هو content sample (singular أو plural) → أعرض الكل
+		  // أي زر تاني → أخفي الكل
+		  const showAllForContent = (filter === 'content sample' || filter === 'content samples');
+	
+		  document.querySelectorAll('#portfolio-grid .portfolio-item').forEach(item => {
+			if (showAllForContent) {
+			  item.classList.remove('hidden');
+			} else {
+			  item.classList.add('hidden');
+			}
+		  });
+	
+		  console.log('filter clicked:', filter, 'showAllForContent=', showAllForContent);
+		});
+	  });
+	
+	  // Hover preview (كما قبل)
+	  (function() {
+		const preview = document.createElement('div');
+		preview.className = 'pf-preview';
+		const previewImg = document.createElement('img');
+		preview.appendChild(previewImg);
+		document.body.appendChild(preview);
+	
+		function attachPreviewHandlers() {
+		  document.querySelectorAll('#portfolio-grid .portfolio-item').forEach(item => {
+			item.addEventListener('mouseenter', () => {
+			  const img = item.querySelector('img');
+			  if (!img) return;
+			  previewImg.src = img.src;
+			  preview.style.display = 'block';
+			});
+			item.addEventListener('mouseleave', () => {
+			  preview.style.display = 'none';
+			});
+		  });
+		}
+	
+		attachPreviewHandlers();
+	  })();
+	
+	})();
+	</script>
+	
+  
 
 
 </body>
